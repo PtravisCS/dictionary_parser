@@ -11,7 +11,7 @@ This program also creates a numeric representation of all the words remaining af
 
 The output file is in JSON format and is formatted similar to the following:
 
-```JSON
+```json
 
 [{
 "word": "abyssinian",
