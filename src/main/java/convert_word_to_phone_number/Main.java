@@ -6,12 +6,21 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Paths;
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.Comparator;
 
 /**
- *
+ * Dictionary Parser
+ * This program takes a newline separated list of words and processes them into a JSON array.
+ * The array contains each word and it's keypad numerical representation.
+ * Further all words less than 2 characters, or greater than 10 are removed from the wordlist.
+ * Finally, all words containing accented characters, commas, apostrophes, and other non-alpha characters are removed.
+ * 
+ * The primary use for the output of this dictionary is to generate or test vanity phone numbers.
+ * 
  * @author Paul Travis
  */
 public class Main {
@@ -26,39 +35,14 @@ public class Main {
         
         try {
             
-            File inFile = new File("D:\\Media\\Documents\\words.txt");
-            FileWriter outFile = new FileWriter("D:\\Media\\Documents\\words_shorter_than_11_sorted.json");
+            String inFileLocation = getPathFromUser("Wordlist/Dictionary File Location> ", s);
+            String outFileLocation = getPathFromUser("Location to Save JSON File> ", s);
+                    
+            File inFile = new File(inFileLocation);
+            FileWriter outFile = new FileWriter(outFileLocation);
             Scanner f = new Scanner(inFile);
             
-            while (f.hasNextLine()) {
-                
-                String line = f.nextLine();
-                
-                if (line.length() > 1 && line.length() < 11) {
-                
-                    if (!line.matches(".*[ÈÉÊËÛÙÏÎÀÂÔèéêëûùïîàâôÇçÃãÕõçÇáéíóúýÁÉÍÓÚÝàèìòùÀÈÌÒÙãõñäëïöüÿÄËÏÖÜÃÕÑâêîôûÂÊÎÔÛ.'].*")) {
-                        
-                        if (!words.contains(line)) {
-                        
-                            words.add(line);
-                        
-                        }
-                        
-                    } else if (line.matches(".*['].*") && line.length() > 2) {
-                        
-                        line = line.replaceAll("[\']", "");
-                        
-                        if (!words.contains(line)) {
-                            
-                            words.add(line);
-                            
-                        }
-                        
-                    }
-                
-                }
-                
-            }
+            processWordsFromFile(words, f);
             
             f.close();
             
@@ -87,12 +71,75 @@ public class Main {
         } catch (IOException ex) {
             
             System.out.println("An Error Occurred \n" + ex.getMessage());
-            
+                        
         } catch (Exception ex) {
             
             System.out.println("An Error Occurred \n" + ex.getMessage());
         }
         
+    }
+    
+    public static String getPathFromUser(String prompt, Scanner s) {
+        
+        String path = "";
+        
+        while (!validatePath(path)) {
+            System.out.print(prompt);
+            path = s.nextLine();
+        }
+        
+        return path;
+    }
+    
+    public static boolean validatePath(String path) {
+        
+        try {
+            
+            Paths.get(path);
+            
+        } catch (InvalidPathException | NullPointerException ex) {        
+            return false;      
+        }
+        
+        return true;
+    }
+    
+    public static ArrayList<String> processWordsFromFile(ArrayList<String> words, Scanner f) {
+        
+        final int MAX_WORD_LENGTH = 10; //The longest length words to keep
+        final int MIN_WORD_LENGTH = 2; //The shortest length words to keep
+        
+        while (f.hasNextLine()) {
+
+            String line = f.nextLine();
+
+            if (line.length() >= MIN_WORD_LENGTH && line.length() <= MAX_WORD_LENGTH) {
+
+                if (!line.matches(".*[ÈÉÊËÛÙÏÎÀÂÔèéêëûùïîàâôÇçÃãÕõçÇáéíóúýÁÉÍÓÚÝàèìòùÀÈÌÒÙãõñäëïöüÿÄËÏÖÜÃÕÑâêîôûÂÊÎÔÛ.'].*")) {
+
+                    if (!words.contains(line)) {
+
+                        words.add(line);
+
+                    }
+
+                } else if (line.matches(".*['].*") && line.length() > 2) {
+
+                    line = line.replaceAll("[\']", "");
+
+                    if (!words.contains(line)) {
+
+                        words.add(line);
+
+                    }
+
+                }
+
+            }
+
+        }
+        
+        return words;
     }
     
     public static ArrayList<String> addNumbersToWords(ArrayList<String> words) {
